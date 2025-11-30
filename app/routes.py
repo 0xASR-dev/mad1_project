@@ -213,7 +213,7 @@ def admin_delete_doctor(d_id):
 def admin_toggle_doctor(d_id):
     doctor = DoctorProfile.query.get_or_404(d_id)
     doctor.is_blacklisted = not doctor.is_blacklisted
-    doctor.user.is_active = True # Ensure they can login to see the blacklist message
+    doctor.user.is_active = True # make sure user can login to see the blacklist message
     db.session.commit()
     state = "re-activated" if not doctor.is_blacklisted else "blacklisted"
     flash(f"Doctor {state}", "info")
@@ -257,9 +257,19 @@ def admin_search():
 @admin_required
 def admin_appointments():
     today = date.today()
-    base_query = Appointment.query.order_by(Appointment.date, Appointment.time_slot)
-    upcoming = base_query.filter(Appointment.date >= today, Appointment.status != "Cancelled").all()
-    past = Appointment.query.filter(Appointment.date < today).order_by(Appointment.date.desc()).all()
+    # Upcoming: Only Booked appointments with future/today date
+    upcoming = Appointment.query.filter(
+        Appointment.date >= today, 
+        Appointment.status == "Booked"
+    ).order_by(Appointment.date, Appointment.time_slot).all()
+    # Past/History: Completed appointments OR past date appointments (not cancelled)
+    past = Appointment.query.filter(
+        db.or_(
+            Appointment.status == "Completed",
+            db.and_(Appointment.date < today, Appointment.status != "Cancelled")
+        )
+    ).order_by(Appointment.date.desc()).all()
+    # Cancelled: All cancelled appointments
     cancelled = Appointment.query.filter_by(status="Cancelled").order_by(Appointment.date.desc()).all()
     return render_template(
         "admin/appointments.html",
@@ -503,9 +513,15 @@ def patient_profile():
 def patient_appointments():
     today = date.today()
     all_appts = current_user.patient_profile.appointments
-    upcoming = [a for a in all_appts if a.date >= today and a.status != "Cancelled"]
-    past = [a for a in all_appts if a.date < today or a.status == "Completed"]
+    # Upcoming: Only Booked appointments with future/today date
+    upcoming = [a for a in all_appts if a.status == "Booked" and a.date >= today]
+    # Past: Completed appointments OR past date appointments (not cancelled)
+    past = [a for a in all_appts if a.status == "Completed" or (a.date < today and a.status != "Cancelled")]
+    # Cancelled: All cancelled appointments
     cancelled = [a for a in all_appts if a.status == "Cancelled"]
+    # Sort for display
+    upcoming.sort(key=lambda x: (x.date, x.time_slot))
+    past.sort(key=lambda x: x.date, reverse=True)
     return render_template("patient/appointments.html", upcoming=upcoming, past=past, cancelled=cancelled, today=today)
 
 @main.route("/patient/appointment/<int:aid>")
@@ -587,30 +603,43 @@ def doctor_required(func):
 @doctor_required
 def doctor_dashboard():
     doc_profile = current_user.doctor_profile
-    # upcoming appointments (today and future)
     today = date.today()
+    
+    # Upcoming: Only Booked appointments with today or future date
     upcoming = (
-        Appointment.query.filter_by(doctor_id=doc_profile.id)
+        Appointment.query.filter_by(doctor_id=doc_profile.id, status="Booked")
         .filter(Appointment.date >= today)
         .order_by(Appointment.date, Appointment.time_slot)
         .all()
     )
-    recent = (
-        Appointment.query.filter_by(doctor_id=doc_profile.id)
-        .filter(Appointment.date < today)
+    
+    # Completed appointments
+    completed = (
+        Appointment.query.filter_by(doctor_id=doc_profile.id, status="Completed")
         .order_by(Appointment.date.desc(), Appointment.time_slot.desc())
         .limit(10)
         .all()
     )
+    
+    # Cancelled appointments
+    cancelled = (
+        Appointment.query.filter_by(doctor_id=doc_profile.id, status="Cancelled")
+        .order_by(Appointment.date.desc(), Appointment.time_slot.desc())
+        .limit(10)
+        .all()
+    )
+    
     patient_map = {}
     for appt in doc_profile.appointments:
         if appt.patient is not None:
             patient_map[appt.patient.id] = appt.patient
     assigned_patients = list(patient_map.values())
+    
     return render_template(
         "doctor/dashboard.html",
         upcoming=upcoming,
-        recent=recent,
+        completed=completed,
+        cancelled=cancelled,
         patients=assigned_patients,
     )
 
@@ -761,7 +790,27 @@ def doctor_cancel_appointment(aid):
 @doctor_required
 def doctor_view_patient_history(patient_id):
     patient = PatientProfile.query.get_or_404(patient_id)
-    return render_template("doctor/patient_history.html", patient=patient)
+    doc_profile = current_user.doctor_profile
+    
+    # Only show appointments with the current doctor
+    upcoming = Appointment.query.filter_by(
+        patient_id=patient.id, 
+        doctor_id=doc_profile.id,
+        status="Booked"
+    ).order_by(Appointment.date, Appointment.time_slot).all()
+    
+    completed = Appointment.query.filter_by(
+        patient_id=patient.id,
+        doctor_id=doc_profile.id,
+        status="Completed"
+    ).order_by(Appointment.date.desc()).all()
+    
+    return render_template(
+        "doctor/patient_history.html", 
+        patient=patient,
+        upcoming=upcoming,
+        completed=completed
+    )
 
 @main.route("/doctor/profile", methods=["GET", "POST"])
 @login_required

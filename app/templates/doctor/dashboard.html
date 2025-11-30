@@ -13,9 +13,10 @@
 
   <div class="row g-4">
     <div class="col-lg-8">
+      <!-- Upcoming Appointments (Booked) -->
       <section class="mb-4">
         <div class="d-flex justify-content-between align-items-center mb-2">
-          <h2 class="h5 mb-0">Upcoming appointments</h2>
+          <h2 class="h5 mb-0">Upcoming Appointments</h2>
           <span class="badge bg-primary">{{ upcoming|length }}</span>
         </div>
         {% if upcoming %}
@@ -41,27 +42,15 @@
                         <br><small class="text-muted">{{ a.patient.user.email }}</small>
                       {% endif %}
                     </td>
-                    <td>
-                      {% if a.status == 'Completed' %}
-                        <span class="badge bg-success">Completed</span>
-                      {% elif a.status == 'Cancelled' %}
-                        <span class="badge bg-danger">Cancelled</span>
-                      {% else %}
-                        <span class="badge bg-info text-dark">{{ a.status }}</span>
-                      {% endif %}
-                    </td>
+                    <td><span class="badge bg-info text-dark">Booked</span></td>
                     <td class="text-end">
                       {% if a.patient %}
                         <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('main.doctor_view_patient_history', patient_id=a.patient.id) }}">History</a>
                       {% endif %}
-                      {% if a.status == 'Booked' %}
-                        <a class="btn btn-sm btn-success" href="{{ url_for('main.doctor_complete_appointment', aid=a.id) }}">Complete</a>
-                        <form class="d-inline-block" method="post" action="{{ url_for('main.doctor_cancel_appointment', aid=a.id) }}">
-                          <button class="btn btn-sm btn-outline-danger" type="submit">Cancel</button>
-                        </form>
-                      {% elif a.status == 'Completed' %}
-                        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('main.doctor_complete_appointment', aid=a.id) }}">Update notes</a>
-                      {% endif %}
+                      <a class="btn btn-sm btn-success" href="{{ url_for('main.doctor_complete_appointment', aid=a.id) }}">Complete</a>
+                      <form class="d-inline-block" method="post" action="{{ url_for('main.doctor_cancel_appointment', aid=a.id) }}">
+                        <button class="btn btn-sm btn-outline-danger" type="submit">Cancel</button>
+                      </form>
                     </td>
                   </tr>
                 {% endfor %}
@@ -73,11 +62,15 @@
         {% endif %}
       </section>
 
-      <section>
-        <h2 class="h5 mb-2">Recent appointments</h2>
-        {% if recent %}
+      <!-- Completed Appointments -->
+      <section class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h2 class="h5 mb-0">Completed Appointments</h2>
+          <span class="badge bg-success">{{ completed|length }}</span>
+        </div>
+        {% if completed %}
           <div class="table-responsive shadow-sm rounded-3">
-            <table class="table table-striped align-middle mb-0">
+            <table class="table table-hover align-middle mb-0">
               <thead class="table-light">
                 <tr>
                   <th scope="col">Date</th>
@@ -88,25 +81,17 @@
                 </tr>
               </thead>
               <tbody>
-                {% for a in recent %}
+                {% for a in completed %}
                   <tr>
                     <td>{{ a.date.strftime('%d %b %Y') }}</td>
                     <td>{{ a.time_slot }}</td>
                     <td>{{ a.patient.user.name if a.patient and a.patient.user else 'N/A' }}</td>
-                    <td>
-                      {% if a.status == 'Completed' %}
-                        <span class="badge bg-success">Completed</span>
-                      {% elif a.status == 'Cancelled' %}
-                        <span class="badge bg-danger">Cancelled</span>
-                      {% else %}
-                        <span class="badge bg-secondary">{{ a.status }}</span>
-                      {% endif %}
-                    </td>
+                    <td><span class="badge bg-success">Completed</span></td>
                     <td>
                       {% if a.treatment %}
-                        <a class="link-primary" href="{{ url_for('main.doctor_complete_appointment', aid=a.id) }}">Review notes</a>
+                        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('main.doctor_complete_appointment', aid=a.id) }}">View/Edit notes</a>
                       {% else %}
-                        <span class="text-muted">N/A</span>
+                        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('main.doctor_complete_appointment', aid=a.id) }}">Add notes</a>
                       {% endif %}
                     </td>
                   </tr>
@@ -115,7 +100,41 @@
             </table>
           </div>
         {% else %}
-          <div class="alert alert-light border mb-0">No recent appointments to display.</div>
+          <div class="alert alert-light border mb-0">No completed appointments yet.</div>
+        {% endif %}
+      </section>
+
+      <!-- Cancelled Appointments -->
+      <section>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h2 class="h5 mb-0">Cancelled Appointments</h2>
+          <span class="badge bg-danger">{{ cancelled|length }}</span>
+        </div>
+        {% if cancelled %}
+          <div class="table-responsive shadow-sm rounded-3">
+            <table class="table table-hover align-middle mb-0 table-secondary">
+              <thead class="table-light">
+                <tr>
+                  <th scope="col">Date</th>
+                  <th scope="col">Time</th>
+                  <th scope="col">Patient</th>
+                  <th scope="col">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for a in cancelled %}
+                  <tr class="text-muted">
+                    <td>{{ a.date.strftime('%d %b %Y') }}</td>
+                    <td>{{ a.time_slot }}</td>
+                    <td>{{ a.patient.user.name if a.patient and a.patient.user else 'N/A' }}</td>
+                    <td><span class="badge bg-danger">Cancelled</span></td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="alert alert-light border mb-0">No cancelled appointments.</div>
         {% endif %}
       </section>
     </div>

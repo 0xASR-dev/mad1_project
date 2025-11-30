@@ -14,8 +14,8 @@ class User(UserMixin, db.Model):
     contact = db.Column(db.String(50))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    doctor_profile = db.relationship("DoctorProfile", uselist=False, back_populates="user")
-    patient_profile = db.relationship("PatientProfile", uselist=False, back_populates="user")
+    doctor_profile = db.relationship("DoctorProfile", uselist=False, back_populates="user", cascade="all, delete-orphan")
+    patient_profile = db.relationship("PatientProfile", uselist=False, back_populates="user", cascade="all, delete-orphan")
 
     def get_id(self):
         return str(self.id)
@@ -28,7 +28,7 @@ def load_user(user_id):
 class DoctorProfile(db.Model):
     __tablename__ = "doctor_profiles"
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), unique=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), unique=True)
     specialization = db.Column(db.String(120))
     bio = db.Column(db.Text)
     is_blacklisted = db.Column(db.Boolean, default=False)
@@ -40,7 +40,7 @@ class DoctorProfile(db.Model):
 class PatientProfile(db.Model):
     __tablename__ = "patient_profiles"
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), unique=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), unique=True)
     age = db.Column(db.Integer)
     contact = db.Column(db.String(50))
     is_blacklisted = db.Column(db.Boolean, default=False)
