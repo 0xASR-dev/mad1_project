@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, abort
 from . import db
-from .models import User, DoctorProfile, PatientProfile, Department, DoctorAvailability, Appointment, Treatment
+from .models import User, DoctorProfile, PatientProfile, DoctorAvailability, Appointment, Treatment
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, login_required, current_user
 from datetime import datetime, timedelta, date
@@ -8,13 +8,7 @@ from sqlalchemy import or_
 
 main = Blueprint("main", __name__)
 
-# Prevent caching of pages to avoid back button access after logout
-@main.after_request
-def add_header(response):
-    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
-    response.headers['Pragma'] = 'no-cache'
-    response.headers['Expires'] = '-1'
-    return response
+
 
 # ---------- Auth ----------
 @main.route("/")
@@ -636,7 +630,7 @@ def doctor_availability():
         "16:00-16:30", "16:30-17:00", "17:00-17:30", "17:30-18:00",
     ]
     
-    # Get existing availability for marking in UI
+    # Get existing availability 
     existing_avail = DoctorAvailability.query.filter_by(doctor_id=dp.id).filter(
         DoctorAvailability.date >= today
     ).all()
@@ -644,7 +638,7 @@ def doctor_availability():
     
     if request.method=="POST":
         date_str = request.form.get("date")
-        timeslots = request.form.getlist("timeslots")  # Multiple slots
+        timeslots = request.form.getlist("timeslots")  # checking Multiple slots
         
         if not date_str:
             flash("Please select a date", "warning")
@@ -656,7 +650,7 @@ def doctor_availability():
             
         date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
         
-        # Ensure date within next 7 days
+        # make sure dates are under next 7 days
         if date_obj < today or date_obj > max_date:
             flash("Availability must be within next 7 days", "warning")
             return redirect(url_for("main.doctor_availability"))
@@ -684,7 +678,7 @@ def doctor_availability():
         .all()
     )
     
-    # Group availability by date for display
+    # Group availability by date 
     avail_by_date = {}
     for a in avail:
         date_key = a.date.strftime('%d %b %Y')
@@ -806,3 +800,12 @@ def doctor_profile():
         return redirect(url_for("main.doctor_dashboard"))
 
     return render_template("doctor/profile.html", profile=profile)
+
+
+# Prevent caching of pages to avoid back button access after logout
+@main.after_request
+def add_header(response):
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '-1'
+    return response
