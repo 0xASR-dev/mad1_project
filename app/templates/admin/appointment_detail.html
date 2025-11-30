@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-1">Appointment #{{ appt.id }}</h1>
+      <p class="text-muted mb-0">Detailed view with treatment history and participant contact information.</p>
+    </div>
+    <a class="btn btn-outline-secondary" href="{{ url_for('main.admin_appointments') }}">&larr; Back to appointments</a>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <h2 class="h5 mb-3">Visit information</h2>
+          <dl class="row mb-0">
+            <dt class="col-sm-5">Date</dt>
+            <dd class="col-sm-7">{{ appt.date.strftime('%d %B %Y') }}</dd>
+            <dt class="col-sm-5">Time</dt>
+            <dd class="col-sm-7">{{ appt.time_slot }}</dd>
+            <dt class="col-sm-5">Status</dt>
+            <dd class="col-sm-7">
+              {% if appt.status == 'Completed' %}
+                <span class="badge bg-success">Completed</span>
+              {% elif appt.status == 'Cancelled' %}
+                <span class="badge bg-danger">Cancelled</span>
+              {% else %}
+                <span class="badge bg-info text-dark">{{ appt.status }}</span>
+              {% endif %}
+            </dd>
+            <dt class="col-sm-5">Created on</dt>
+            <dd class="col-sm-7">{{ appt.created_at.strftime('%d %b %Y %H:%M') if appt.created_at else 'N/A' }}</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <h2 class="h5 mb-3">Participants</h2>
+          <div class="mb-3">
+            <h3 class="h6 text-uppercase text-muted mb-1">Doctor</h3>
+            <p class="mb-0 fw-semibold">{{ appt.doctor.user.name if appt.doctor and appt.doctor.user else 'N/A' }}</p>
+            {% if appt.doctor and appt.doctor.user %}
+              <small class="text-muted">{{ appt.doctor.user.email }}</small>
+              {% if appt.doctor.specialization %}<br><small class="text-muted">Specialization: {{ appt.doctor.specialization }}</small>{% endif %}
+            {% endif %}
+          </div>
+          <div>
+            <h3 class="h6 text-uppercase text-muted mb-1">Patient</h3>
+            <p class="mb-0 fw-semibold">{{ appt.patient.user.name if appt.patient and appt.patient.user else 'N/A' }}</p>
+            {% if appt.patient and appt.patient.user %}
+              <small class="text-muted">{{ appt.patient.user.email }}</small>
+              {% if appt.patient.contact %}<br><small class="text-muted">Contact: {{ appt.patient.contact }}</small>{% endif %}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="mt-5">
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        <h2 class="h5 mb-3">Treatment notes</h2>
+        {% if appt.treatment %}
+          <div class="row g-4">
+            <div class="col-md-4">
+              <h3 class="h6 text-muted text-uppercase">Diagnosis</h3>
+              <p>{{ appt.treatment.diagnosis or 'N/A' }}</p>
+            </div>
+            <div class="col-md-4">
+              <h3 class="h6 text-muted text-uppercase">Prescription</h3>
+              <p>{{ appt.treatment.prescription or 'N/A' }}</p>
+            </div>
+            <div class="col-md-4">
+              <h3 class="h6 text-muted text-uppercase">Doctor notes</h3>
+              <p>{{ appt.treatment.notes or 'N/A' }}</p>
+            </div>
+          </div>
+        {% else %}
+          <p class="text-muted mb-0">No treatment details recorded for this appointment yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  <section class="mt-5">
+    <h2 class="h5 mb-3">Update status</h2>
+    <form class="row gy-2 gx-3 align-items-center" method="post" action="{{ url_for('main.admin_update_appointment_status', aid=appt.id) }}">
+      <div class="col-auto">
+        <label class="form-label" for="status">Select new status</label>
+        <select class="form-select" id="status" name="status" required>
+          {% for option in ['Booked', 'Completed', 'Cancelled'] %}
+            <option value="{{ option }}" {% if appt.status == option %}selected{% endif %}>{{ option }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-auto pt-4">
+        <button class="btn btn-primary" type="submit">Update status</button>
+      </div>
+    </form>
+  </section>
+{% endblock %}

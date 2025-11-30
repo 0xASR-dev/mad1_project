@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="h3 mb-1">Manage Appointments</h1>
+    <p class="text-muted mb-0">Review upcoming visits, check past activity, and update appointment status.
+    </p>
+  </div>
+  <a class="btn btn-outline-secondary" href="{{ url_for('main.admin_dashboard') }}">&larr; Back to dashboard</a>
+</div>
+
+<section class="mb-5">
+  <h2 class="h5 mb-3">Upcoming appointments</h2>
+  {% if upcoming %}
+  <div class="table-responsive shadow-sm rounded-3">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th scope="col">Date</th>
+          <th scope="col">Time</th>
+          <th scope="col">Doctor</th>
+          <th scope="col">Patient</th>
+          <th scope="col">Status</th>
+          <th scope="col" class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for appt in upcoming %}
+        <tr>
+          <td>{{ appt.date.strftime('%d %b %Y') }}</td>
+          <td>{{ appt.time_slot }}</td>
+          <td>{{ appt.doctor.user.name if appt.doctor and appt.doctor.user else 'N/A' }}</td>
+          <td>{{ appt.patient.user.name if appt.patient and appt.patient.user else 'N/A' }}</td>
+          <td><span class="badge bg-info text-dark">{{ appt.status }}</span></td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-secondary"
+              href="{{ url_for('main.admin_view_appointment', aid=appt.id) }}">View</a>
+            <form class="d-inline-block" method="post"
+              action="{{ url_for('main.admin_update_appointment_status', aid=appt.id) }}">
+              <input type="hidden" name="status" value="Completed">
+              <button class="btn btn-sm btn-success" type="submit">Mark completed</button>
+            </form>
+            <form class="d-inline-block" method="post"
+              action="{{ url_for('main.admin_update_appointment_status', aid=appt.id) }}">
+              <input type="hidden" name="status" value="Cancelled">
+              <button class="btn btn-sm btn-outline-danger" type="submit">Cancel</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="alert alert-light border">No upcoming appointments.</div>
+  {% endif %}
+</section>
+
+<section class="mb-5">
+  <h2 class="h5 mb-3">Recent history</h2>
+  {% if past %}
+  <div class="table-responsive shadow-sm rounded-3">
+    <table class="table table-striped align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th scope="col">Date</th>
+          <th scope="col">Time</th>
+          <th scope="col">Doctor</th>
+          <th scope="col">Patient</th>
+          <th scope="col">Status</th>
+          <th scope="col" class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for appt in past %}
+        <tr>
+          <td>{{ appt.date.strftime('%d %b %Y') }}</td>
+          <td>{{ appt.time_slot }}</td>
+          <td>{{ appt.doctor.user.name if appt.doctor and appt.doctor.user else 'N/A' }}</td>
+          <td>{{ appt.patient.user.name if appt.patient and appt.patient.user else 'N/A' }}</td>
+          <td>
+            {% if appt.status == 'Completed' %}
+            <span class="badge bg-success">Completed</span>
+            {% else %}
+            <span class="badge bg-secondary">{{ appt.status }}</span>
+            {% endif %}
+          </td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-secondary"
+              href="{{ url_for('main.admin_view_appointment', aid=appt.id) }}">View</a>
+            {% if appt.status != 'Completed' %}
+            <form class="d-inline-block" method="post"
+              action="{{ url_for('main.admin_update_appointment_status', aid=appt.id) }}">
+              <input type="hidden" name="status" value="Completed">
+              <button class="btn btn-sm btn-success" type="submit">Mark completed</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="alert alert-light border">No past appointments logged yet.</div>
+  {% endif %}
+</section>
+
+<section>
+  <h2 class="h5 mb-3">Cancelled appointments</h2>
+  {% if cancelled %}
+  <div class="table-responsive shadow-sm rounded-3">
+    <table class="table table-bordered align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th scope="col">Date</th>
+          <th scope="col">Time</th>
+          <th scope="col">Doctor</th>
+          <th scope="col">Patient</th>
+          <th scope="col">Status</th>
+          <th scope="col" class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for appt in cancelled %}
+        <tr>
+          <td>{{ appt.date.strftime('%d %b %Y') }}</td>
+          <td>{{ appt.time_slot }}</td>
+          <td>{{ appt.doctor.user.name if appt.doctor and appt.doctor.user else 'N/A' }}</td>
+          <td>{{ appt.patient.user.name if appt.patient and appt.patient.user else 'N/A' }}</td>
+          <td><span class="badge bg-danger">Cancelled</span></td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-secondary"
+              href="{{ url_for('main.admin_view_appointment', aid=appt.id) }}">View</a>
+            <form class="d-inline-block" method="post"
+              action="{{ url_for('main.admin_update_appointment_status', aid=appt.id) }}">
+              <input type="hidden" name="status" value="Booked">
+              <button class="btn btn-sm btn-outline-primary" type="submit">Reopen</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="alert alert-light border">No cancellations recorded.</div>
+  {% endif %}
+</section>
+{% endblock %}

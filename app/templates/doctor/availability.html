@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="h3 mb-1">Availability Planner</h1>
+    <p class="text-muted mb-0">Set your available time slots for the next 7 days ({{ today.strftime('%d %b') }} -
+      {{ max_date.strftime('%d %b %Y') }}).</p>
+  </div>
+  <a class="btn btn-outline-secondary" href="{{ url_for('main.doctor_dashboard') }}">&larr; Back to dashboard</a>
+</div>
+
+<!-- Add Availability Form -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white py-3">
+    <h2 class="h5 mb-0">Add New Availability</h2>
+  </div>
+  <div class="card-body">
+    <form method="post">
+      <div class="row g-3 mb-4">
+        <div class="col-md-4">
+          <label class="form-label fw-semibold" for="date">Select Date</label>
+          <input class="form-control form-control-lg" id="date" name="date" type="date" min="{{ today.isoformat() }}"
+            max="{{ max_date.isoformat() }}" required>
+        </div>
+      </div>
+
+      <div class="border rounded-3 p-3 mb-4" style="background-color: #f8f9fa;">
+        <div class="row g-2">
+          {% for slot in time_slots %}
+          <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+            <div class="form-check">
+              <input class="form-check-input slot-checkbox" type="checkbox" name="timeslots" value="{{ slot }}"
+                id="slot_{{ loop.index }}">
+              <label class="form-check-label" for="slot_{{ loop.index }}">{{ slot }}</label>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary btn-lg">
+          <i class="bi bi-plus-circle me-1"></i> Add Selected Slots
+        </button>
+        <button type="button" class="btn btn-outline-secondary" onclick="selectAllSlots()">Select All</button>
+        <button type="button" class="btn btn-outline-secondary" onclick="clearAllSlots()">Clear All</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Current Availability -->
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+    <h2 class="h5 mb-0">Your Upcoming Availability</h2>
+    <span class="badge bg-primary">{{ avail|length }} slots</span>
+  </div>
+  <div class="card-body">
+    {% if avail_by_date %}
+    {% for date_str, slots in avail_by_date.items() %}
+    <div class="mb-4">
+      <h6 class="fw-semibold text-primary mb-2">{{ date_str }}</h6>
+      <div class="d-flex flex-wrap gap-2">
+        {% for a in slots %}
+        <div class="bg-light border rounded-pill px-3 py-2 slot-item"
+          style="position: relative; display: inline-block;">
+          <span>{{ a.timeslot }}</span>
+          <form class="remove-btn" method="post" style="position: absolute; top: -8px; right: -8px;"
+            action="{{ url_for('main.doctor_remove_availability', availability_id=a.id) }}">
+            <button type="submit" class="btn btn-sm p-0"
+              style="background: transparent; border: none; font-size: 1.2rem; line-height: 1; cursor: pointer;"
+              title="Remove this slot">
+              ❌
+            </button>
+          </form>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="text-center py-4">
+      <i class="bi bi-calendar-x text-muted" style="font-size: 3rem;"></i>
+      <p class="text-muted mt-2 mb-0">No availability set. Add slots above to let patients book appointments.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+  /* Hide remove button by default */
+  .slot-item .remove-btn {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  /* Show remove button on hover */
+  .slot-item:hover .remove-btn {
+    opacity: 1;
+  }
+
+  /* Slightly scale up the slot on hover for better feedback */
+  .slot-item {
+    transition: transform 0.2s ease;
+  }
+
+  .slot-item:hover {
+    transform: scale(1.05);
+  }
+</style>
+
+<script>
+  function selectAllSlots() {
+    document.querySelectorAll('.slot-checkbox').forEach(cb => cb.checked = true);
+  }
+
+  function clearAllSlots() {
+    document.querySelectorAll('.slot-checkbox').forEach(cb => cb.checked = false);
+  }
+</script>
+{% endblock %}

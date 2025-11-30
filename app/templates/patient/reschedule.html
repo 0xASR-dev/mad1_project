@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card shadow-sm border-0">
+      <div class="card-body p-4 p-md-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h1 class="h3 fw-bold mb-1">Reschedule Appointment</h1>
+            <p class="text-muted mb-0">Select a new date and time for your appointment.</p>
+          </div>
+          <a class="btn btn-outline-secondary" href="{{ url_for('main.patient_appointments') }}">&larr; Back</a>
+        </div>
+
+        <div class="card bg-light border mb-4">
+          <div class="card-body">
+            <h6 class="card-title text-muted mb-3">Current Appointment Details</h6>
+            <dl class="row mb-0">
+              <dt class="col-sm-4">Current Date</dt>
+              <dd class="col-sm-8">{{ appt.date.strftime('%d %b %Y') }}</dd>
+              <dt class="col-sm-4">Current Time</dt>
+              <dd class="col-sm-8">{{ appt.time_slot }}</dd>
+              <dt class="col-sm-4">Doctor</dt>
+              <dd class="col-sm-8">Dr. {{ doctor.user.name }} ({{ doctor.specialization or 'General' }})</dd>
+            </dl>
+          </div>
+        </div>
+
+        {% if avail %}
+        <form method="post">
+          <div class="mb-4">
+            <label class="form-label fw-semibold" for="slot">Select New Date &amp; Time Slot</label>
+            <select name="slot" id="slot" class="form-select form-select-lg" required>
+              <option value="" disabled selected>Choose a new slot...</option>
+              {% for a in avail %}
+              <option value="{{ a.id }}">{{ a.date.strftime('%d %b %Y') }} — {{ a.timeslot }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="d-flex gap-2">
+            <a class="btn btn-outline-secondary btn-lg" href="{{ url_for('main.patient_appointments') }}">Cancel</a>
+            <button class="btn btn-warning btn-lg ms-auto" type="submit">Reschedule</button>
+          </div>
+        </form>
+        {% else %}
+        <div class="alert alert-warning">
+          <strong>No available slots.</strong><br>
+          Dr. {{ doctor.user.name }} has no available slots in the next 7 days. Please try again later or contact the
+          hospital.
+        </div>
+        <a class="btn btn-outline-secondary" href="{{ url_for('main.patient_appointments') }}">Go Back</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

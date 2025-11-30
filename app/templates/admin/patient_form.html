@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">Edit patient</h1>
+    <a class="btn btn-outline-secondary" href="{{ url_for('main.admin_view_patient', pid=patient.id) }}">&larr; Back to profile</a>
+  </div>
+
+  <div class="card shadow-sm border-0">
+    <div class="card-body p-4 p-md-5">
+      <form method="post">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label" for="name">Full name</label>
+            <input class="form-control form-control-lg" id="name" name="name" type="text" value="{{ patient.user.name }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="email">Email</label>
+            <input class="form-control form-control-lg" id="email" name="email" type="email" value="{{ patient.user.email }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="contact">Contact number</label>
+            <input class="form-control form-control-lg" id="contact" name="contact" type="text" value="{{ patient.contact or '' }}" placeholder="Optional">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="age">Age</label>
+            <input class="form-control form-control-lg" id="age" name="age" type="number" min="0" value="{{ patient.age or '' }}" placeholder="Optional">
+          </div>
+        </div>
+        <div class="d-flex justify-content-end gap-3 mt-4">
+          <a class="btn btn-outline-secondary" href="{{ url_for('main.admin_view_patient', pid=patient.id) }}">Cancel</a>
+          <button class="btn btn-primary" type="submit">Save changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

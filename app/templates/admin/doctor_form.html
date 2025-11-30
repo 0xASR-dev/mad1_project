@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ 'Edit Doctor' if doctor else 'Add New Doctor' }}</h2>
+
+<form method="post">
+  <div class="mb-3">
+    <label>Name</label>
+    <input type="text" name="name" value="{{ doctor.user.name if doctor else '' }}" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label>Email</label>
+    <input type="email" name="email" value="{{ doctor.user.email if doctor else '' }}" class="form-control" {% if doctor %}readonly{% endif %} required>
+  </div>
+  <div class="mb-3">
+    <label>Specialization</label>
+    <input type="text" name="specialization" value="{{ doctor.specialization if doctor else '' }}" class="form-control" required>
+  </div>
+  {% if not doctor %}
+  <div class="mb-3">
+    <label>Temporary Password (optional)</label>
+    <input type="text" name="password" class="form-control" placeholder="Default = doctor123">
+  </div>
+  {% endif %}
+  <button type="submit" class="btn btn-primary">Save</button>
+  <a href="{{ url_for('main.admin_doctors') }}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

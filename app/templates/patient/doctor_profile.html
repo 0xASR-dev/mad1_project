@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4 p-md-5 text-center">
+                <div class="mb-4">
+                    <div class="avatar-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-3"
+                        style="width: 80px; height: 80px; font-size: 2rem; border-radius: 50%;">
+                        {{ doctor.user.name[0] | upper }}
+                    </div>
+                    <h1 class="h3 fw-bold mb-1">Dr. {{ doctor.user.name }}</h1>
+                    <p class="text-primary fw-semibold mb-3">{{ doctor.specialization }}</p>
+                </div>
+
+                <div class="text-start mb-4">
+                    <h5 class="fw-bold border-bottom pb-2 mb-3">About</h5>
+                    <p class="text-muted">{{ doctor.bio or "No biography available." }}</p>
+                </div>
+
+                <div class="text-start mb-4">
+                    <h5 class="fw-bold border-bottom pb-2 mb-3">Contact Information</h5>
+                    <p class="mb-1"><strong>Email:</strong> {{ doctor.user.email }}</p>
+                    <p class="mb-0"><strong>Contact:</strong> {{ doctor.user.contact or "N/A" }}</p>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('main.book_appointment', doctor_id=doctor.id) }}"
+                        class="btn btn-primary btn-lg">Book Appointment</a>
+                    <a href="{{ url_for('main.patient_dashboard') }}" class="btn btn-outline-secondary">Back to
+                        Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

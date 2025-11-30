@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="h3 mb-0">Appointment Details</h1>
+      <a class="btn btn-outline-secondary" href="{{ url_for('main.patient_appointments') }}">&larr; Back</a>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-header bg-white py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <h2 class="h5 mb-0">Appointment Information</h2>
+          {% if appt.status == 'Booked' %}
+            <span class="badge bg-info text-dark fs-6">Booked</span>
+          {% elif appt.status == 'Completed' %}
+            <span class="badge bg-success fs-6">Completed</span>
+          {% elif appt.status == 'Cancelled' %}
+            <span class="badge bg-danger fs-6">Cancelled</span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="card-body p-4">
+        <dl class="row mb-0">
+          <dt class="col-sm-4 text-muted">Date</dt>
+          <dd class="col-sm-8">{{ appt.date.strftime('%A, %d %B %Y') }}</dd>
+
+          <dt class="col-sm-4 text-muted">Time Slot</dt>
+          <dd class="col-sm-8">{{ appt.time_slot }}</dd>
+
+          <dt class="col-sm-4 text-muted">Doctor</dt>
+          <dd class="col-sm-8">
+            {% if appt.doctor and appt.doctor.user %}
+              <strong>Dr. {{ appt.doctor.user.name }}</strong>
+              <br><small class="text-muted">{{ appt.doctor.specialization or 'General' }}</small>
+            {% else %}
+              N/A
+            {% endif %}
+          </dd>
+
+          <dt class="col-sm-4 text-muted">Booked On</dt>
+          <dd class="col-sm-8">{{ appt.created_at.strftime('%d %b %Y, %H:%M') if appt.created_at else 'N/A' }}</dd>
+        </dl>
+      </div>
+    </div>
+
+    {% if appt.treatment %}
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3">
+          <h2 class="h5 mb-0">Treatment Details</h2>
+        </div>
+        <div class="card-body p-4">
+          <div class="mb-4">
+            <h6 class="fw-semibold text-muted mb-2">Diagnosis</h6>
+            <p class="mb-0">{{ appt.treatment.diagnosis or 'No diagnosis recorded' }}</p>
+          </div>
+
+          <div class="mb-4">
+            <h6 class="fw-semibold text-muted mb-2">Prescription</h6>
+            <p class="mb-0 bg-light p-3 rounded">{{ appt.treatment.prescription or 'No prescription recorded' }}</p>
+          </div>
+
+          {% if appt.treatment.notes %}
+            <div>
+              <h6 class="fw-semibold text-muted mb-2">Doctor's Notes</h6>
+              <p class="mb-0 fst-italic text-secondary">{{ appt.treatment.notes }}</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    {% elif appt.status == 'Completed' %}
+      <div class="alert alert-info">Treatment details have not been recorded yet.</div>
+    {% endif %}
+
+    {% if appt.status == 'Booked' %}
+      <div class="d-flex gap-2">
+        <a class="btn btn-warning" href="{{ url_for('main.patient_reschedule_appointment', aid=appt.id) }}">Reschedule</a>
+        <form method="post" action="{{ url_for('main.patient_cancel_appointment', aid=appt.id) }}" onsubmit="return confirm('Are you sure you want to cancel this appointment?');">
+          <button class="btn btn-outline-danger" type="submit">Cancel Appointment</button>
+        </form>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

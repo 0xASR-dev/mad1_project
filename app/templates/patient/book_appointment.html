@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="row justify-content-center">
+    <div class="col-xl-9 col-lg-10">
+      <!-- Header Card -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+          <div class="row align-items-center">
+            <div class="col-md-8">
+              <h1 class="h2 mb-2">Book Your Appointment</h1>
+              <div class="d-flex align-items-center text-muted">
+                <i class="bi bi-person-badge me-2"></i>
+                <span class="me-3"><strong>Dr. {{ doctor.user.name }}</strong></span>
+                <span class="badge bg-primary-subtle text-primary">{{ doctor.specialization }}</span>
+              </div>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+              <a class="btn btn-outline-secondary" href="{{ url_for('main.patient_dashboard') }}">
+                <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% if sorted_dates %}
+      <form method="post">
+        <!-- Instructions Card -->
+        <div class="alert alert-info border-0 shadow-sm d-flex align-items-start mb-4">
+          <i class="bi bi-info-circle-fill text-info me-2 mt-1 fs-5"></i>
+          <div>
+            <strong>How to book:</strong> Select your preferred time slot below and click "Confirm Booking".
+            <br><small class="text-muted">Available slots are shown in blue. Slots already taken are grayed out.</small>
+          </div>
+        </div>
+
+        <!-- Time Slots by Date -->
+        <div class="card border-0 shadow-sm">
+          <div class="card-header bg-white py-3">
+            <h5 class="mb-0"><i class="bi bi-calendar-week me-2"></i>Available Time Slots</h5>
+          </div>
+          <div class="card-body p-4">
+            {% for date_str in sorted_dates %}
+            {% set date_obj = avail_by_date[date_str][0].date %}
+            <div class="mb-5 {% if not loop.last %}pb-4 border-bottom{% endif %}">
+              <!-- Date Header -->
+              <div class="d-flex align-items-center mb-3">
+                <div class="bg-primary bg-gradient text-white rounded p-3 text-center me-3" style="min-width: 80px;">
+                  <div class="fw-bold fs-4">{{ date_obj.strftime('%d') }}</div>
+                  <div class="small">{{ date_obj.strftime('%b') }}</div>
+                </div>
+                <div>
+                  <h6 class="mb-1">{{ date_obj.strftime('%A, %B %d, %Y') }}</h6>
+                  <p class="text-muted mb-0 small">
+                    {% set available_count = avail_by_date[date_str]|length -
+                    (avail_by_date[date_str]|selectattr('date.isoformat', 'in',
+                    booked_slots|map(attribute='0')|list)|list|length) %}
+                    <i class="bi bi-clock-history me-1"></i>{{ available_count }} slots available
+                  </p>
+                </div>
+              </div>
+
+              <!-- Time Slot Buttons -->
+              <div class="d-flex flex-wrap gap-2 ps-md-5">
+                {% for slot in avail_by_date[date_str] %}
+                {% set is_booked = (slot.date.isoformat(), slot.timeslot) in booked_slots %}
+                <div class="position-relative">
+                  <input type="radio" class="btn-check" name="slot" id="slot_{{ slot.id }}" value="{{ slot.id }}"
+                    autocomplete="off" {% if is_booked %}disabled{% endif %} required>
+                  <label class="btn btn-slot {% if is_booked %}btn-slot-booked{% else %}btn-slot-available{% endif %}"
+                    for="slot_{{ slot.id }}">
+                    <i class="bi bi-{% if is_booked %}lock{% else %}clock{% endif %} me-1"></i>
+                    {{ slot.timeslot }}
+                    {% if is_booked %}
+                    <small class="d-block text-muted" style="font-size: 0.7rem;">Taken</small>
+                    {% endif %}
+                  </label>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Confirm Button -->
+        <div class="card border-0 shadow-sm mt-4">
+          <div class="card-body p-4">
+            <div class="row align-items-center">
+              <div class="col-md-7">
+                <p class="mb-md-0 text-muted">
+                  <i class="bi bi-check-circle me-1"></i>
+                  Please review your selected time slot before confirming your appointment.
+                </p>
+              </div>
+              <div class="col-md-5 text-md-end mt-3 mt-md-0">
+                <button type="submit" class="btn btn-success btn-lg px-5 w-100 w-md-auto">
+                  <i class="bi bi-calendar-check me-2"></i>Confirm Booking
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      {% else %}
+      <!-- No Slots Available -->
+      <div class="card border-0 shadow-sm">
+        <div class="card-body text-center py-5">
+          <i class="bi bi-calendar-x text-muted mb-3" style="font-size: 4rem;"></i>
+          <h4 class="mb-2">No Available Slots</h4>
+          <p class="text-muted mb-4">This doctor has no availability in the next 7 days.</p>
+          <a href="{{ url_for('main.patient_dashboard') }}" class="btn btn-primary">
+            <i class="bi bi-search me-1"></i> Find Another Doctor
+          </a>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Custom Button Styles for Slots */
+  .btn-slot {
+    min-width: 120px;
+    padding: 0.75rem 1rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: 2px solid;
+  }
+
+  .btn-slot-available {
+    border-color: #0d6efd;
+    background: white;
+    color: #0d6efd;
+  }
+
+  .btn-slot-available:hover {
+    background: #0d6efd;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(13, 110, 253, 0.2);
+  }
+
+  .btn-check:checked+.btn-slot-available {
+    background: #0d6efd;
+    color: white;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+  }
+
+  .btn-slot-booked {
+    border-color: #6c757d;
+    background: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+
+  .btn-check:disabled+.btn-slot-booked {
+    pointer-events: none;
+  }
+
+  /* Date Card Hover Effect */
+  .mb-5:hover .bg-primary {
+    transform: scale(1.05);
+    transition: transform 0.2s ease;
+  }
+</style>
+{% endblock %}

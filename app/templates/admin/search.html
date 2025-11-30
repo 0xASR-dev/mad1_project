@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-1">Directory search</h1>
+      <p class="text-muted mb-0">Find doctors or patients by name, email, specialization, or contact details.</p>
+    </div>
+    <a class="btn btn-outline-secondary" href="{{ url_for('main.admin_dashboard') }}">&larr; Back to dashboard</a>
+  </div>
+
+  <form class="row gy-2 gx-3 align-items-center mb-4" method="get">
+    <div class="col-sm-6 col-md-4">
+      <label class="form-label visually-hidden" for="query">Search</label>
+      <input class="form-control" id="query" name="q" type="search" value="{{ q }}" placeholder="e.g. cardiology, john, +1-555...">
+    </div>
+    <div class="col-auto">
+      <button class="btn btn-primary" type="submit">Search</button>
+    </div>
+  </form>
+
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <h2 class="h5 mb-3">Doctors</h2>
+          {% if doctors %}
+            <ul class="list-group list-group-flush">
+              {% for doctor in doctors %}
+                <li class="list-group-item d-flex justify-content-between align-items-start">
+                  <div>
+                    <h3 class="h6 mb-1">{{ doctor.user.name }}</h3>
+                    <p class="mb-1 text-muted">{{ doctor.user.email }}</p>
+                    <small class="text-muted">Specialization: {{ doctor.specialization or 'N/A' }}</small>
+                  </div>
+                  <a class="btn btn-sm btn-outline-primary" href="{{ url_for('main.admin_edit_doctor', d_id=doctor.id) }}">Edit</a>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-muted mb-0">No matching doctors.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <h2 class="h5 mb-3">Patients</h2>
+          {% if patients %}
+            <ul class="list-group list-group-flush">
+              {% for patient in patients %}
+                <li class="list-group-item d-flex justify-content-between align-items-start">
+                  <div>
+                    <h3 class="h6 mb-1">{{ patient.user.name }}</h3>
+                    <p class="mb-1 text-muted">{{ patient.user.email }}</p>
+                    <small class="text-muted">Contact: {{ patient.contact or 'N/A' }}</small>
+                  </div>
+                  <a class="btn btn-sm btn-outline-primary" href="{{ url_for('main.admin_view_patient', pid=patient.id) }}">Open</a>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-muted mb-0">No matching patients.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

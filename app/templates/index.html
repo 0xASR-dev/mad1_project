@@ -1,0 +1,530 @@
+{% extends "base.html" %}
+
+{% block layout %}
+<!-- Flash Messages (Manual inclusion for full-width layout) -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="container mt-3 position-absolute start-50 translate-middle-x" style="z-index: 1050; max-width: 600px;">
+  {% for cat, msg in messages %}
+  <div class="alert alert-{{ cat }} alert-dismissible fade show shadow-sm" role="alert">
+    {{ msg }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+{% block content %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+  :root {
+    /* Modern Medical Palette */
+    --primary: #0284c7;
+    /* Modern Blue */
+    --primary-dark: #0369a1;
+    --secondary: #0ea5e9;
+    /* Lighter Blue */
+    --accent: #14b8a6;
+    /* Teal */
+    --surface: #ffffff;
+    --background: #f8fafc;
+    --text-main: #0f172a;
+    /* Slate 900 */
+    --text-muted: #64748b;
+    /* Slate 500 */
+    --border: #e2e8f0;
+
+    /* Spacing & Radius */
+    --radius-lg: 1rem;
+    --radius-xl: 1.5rem;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: var(--background);
+    color: var(--text-main);
+    line-height: 1.6;
+  }
+
+  /* Typography Enhancements */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: var(--text-main);
+  }
+
+  .display-4 {
+    font-weight: 800;
+    line-height: 1.1;
+  }
+
+  .lead {
+    color: var(--text-muted);
+    font-weight: 500;
+    font-size: 1.25rem;
+  }
+
+  /* Modern Hero Section */
+  .hero-section {
+    background: var(--surface);
+    padding: 6rem 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background: #f0f9ff;
+    color: var(--primary);
+    border-radius: 9999px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #e0f2fe;
+  }
+
+  /* Modern Cards */
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 100%;
+  }
+
+  .feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+  }
+
+  .icon-box {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+  }
+
+  .icon-primary {
+    background: #f0f9ff;
+    color: var(--primary);
+  }
+
+  .icon-teal {
+    background: #f0fdfa;
+    color: var(--accent);
+  }
+
+  .icon-indigo {
+    background: #eef2ff;
+    color: #6366f1;
+  }
+
+  /* Role Selection Cards */
+  .role-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .role-card:hover {
+    border-color: var(--primary);
+    box-shadow: var(--shadow-md);
+  }
+
+  .role-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--primary);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .role-card:hover::before {
+    opacity: 1;
+  }
+
+  .role-emoji {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    display: inline-block;
+    transition: transform 0.3s ease;
+  }
+
+  .role-card:hover .role-emoji {
+    transform: scale(1.1);
+  }
+
+  /* Stats Section */
+  .stat-item {
+    padding: 1.5rem;
+  }
+
+  .stat-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--primary);
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-label {
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Buttons */
+  .btn-modern-primary {
+    background-color: var(--primary);
+    color: white;
+    padding: 0.875rem 2rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    border: none;
+    transition: all 0.2s ease;
+  }
+
+  .btn-modern-primary:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-1px);
+    color: white;
+  }
+
+  .btn-modern-outline {
+    background-color: transparent;
+    color: var(--text-main);
+    padding: 0.875rem 2rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    border: 1px solid var(--border);
+    transition: all 0.2s ease;
+  }
+
+  .btn-modern-outline:hover {
+    border-color: var(--text-main);
+    background-color: var(--surface);
+  }
+
+  /* Abstract Background Shapes */
+  .bg-shape {
+    position: absolute;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  .shape-1 {
+    top: -10%;
+    right: -5%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, var(--secondary) 0%, transparent 70%);
+    opacity: 0.05;
+    border-radius: 50%;
+  }
+
+  .shape-2 {
+    bottom: -10%;
+    left: -5%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+    opacity: 0.05;
+    border-radius: 50%;
+  }
+</style>
+
+<!-- Hero Section -->
+<section class="hero-section">
+  <div class="bg-shape shape-1"></div>
+  <div class="bg-shape shape-2"></div>
+
+  <div class="container position-relative" style="z-index: 1;">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6">
+        <div class="hero-badge">
+          <span class="me-2">✨</span> New Standard in Healthcare
+        </div>
+        <h1 class="display-4 mb-4">
+          Modern Care for <br>
+          <span style="color: var(--primary);">Modern Life</span>
+        </h1>
+        <p class="lead mb-5">
+          Experience a seamless healthcare journey. Book appointments, manage records, and connect with top
+          specialists—all in one secure platform.
+        </p>
+        <div class="d-flex gap-3 flex-wrap">
+          <a href="{{ url_for('main.register') }}" class="btn btn-modern-primary">
+            Get Started Now
+          </a>
+          <a href="{{ url_for('main.login') }}" class="btn btn-modern-outline">
+            Sign In
+          </a>
+        </div>
+
+        <div class="mt-5 d-flex align-items-center gap-4">
+          <div class="d-flex -space-x-2">
+            <!-- Simulated Avatars -->
+            <div style="width: 40px; height: 40px; background: #e2e8f0; border-radius: 50%; border: 2px solid white;">
+            </div>
+            <div
+              style="width: 40px; height: 40px; background: #cbd5e1; border-radius: 50%; border: 2px solid white; margin-left: -10px;">
+            </div>
+            <div
+              style="width: 40px; height: 40px; background: #94a3b8; border-radius: 50%; border: 2px solid white; margin-left: -10px;">
+            </div>
+          </div>
+          <div>
+            <div class="fw-bold">Trusted by 10,000+</div>
+            <div class="text-muted small">Patients & Doctors</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="position-relative">
+          <!-- Abstract UI Representation -->
+          <div class="bg-white p-4 rounded-4 shadow-lg border" style="transform: rotate(-2deg);">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <div>
+                <div class="fw-bold h5 mb-0">Upcoming Appointment</div>
+                <div class="text-muted small">Today, 2:30 PM</div>
+              </div>
+              <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">Confirmed</span>
+            </div>
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <div class="bg-light rounded-circle p-3">👨‍⚕️</div>
+              <div>
+                <div class="fw-bold">Dr. Rahul Sharma</div>
+                <div class="text-muted small">Cardiologist</div>
+              </div>
+            </div>
+            <hr class="my-3 opacity-10">
+            <div class="d-flex gap-2">
+              <div class="flex-grow-1 bg-light rounded p-2 text-center small fw-bold text-muted">Reschedule</div>
+              <div class="flex-grow-1 bg-primary text-white rounded p-2 text-center small fw-bold">Join Call</div>
+            </div>
+          </div>
+
+          <!-- Floating Card -->
+          <div class="bg-white p-3 rounded-4 shadow-lg border position-absolute"
+            style="bottom: -20px; right: -20px; width: 200px; transform: rotate(3deg);">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <div class="text-success">●</div>
+              <div class="small fw-bold">System Status</div>
+            </div>
+            <div class="h4 fw-bold mb-0 text-success">99.9%</div>
+            <div class="small text-muted">Uptime Guaranteed</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Role Selection -->
+<section class="py-5 bg-white">
+  <div class="container py-5">
+    <div class="text-center mb-5">
+      <h2 class="h1 mb-3">Who are you?</h2>
+      <p class="text-muted">Select your role to access your personalized dashboard</p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-4">
+        <a href="{{ url_for('main.login') }}" class="text-decoration-none">
+          <div class="role-card h-100">
+            <div class="role-emoji">👋</div>
+            <h3 class="h4 mb-2">Patient</h3>
+            <p class="text-muted mb-0">Book appointments, view medical history, and manage your health journey.</p>
+          </div>
+        </a>
+      </div>
+      <div class="col-md-4">
+        <a href="{{ url_for('main.login') }}" class="text-decoration-none">
+          <div class="role-card h-100">
+            <div class="role-emoji">🩺</div>
+            <h3 class="h4 mb-2">Doctor</h3>
+            <p class="text-muted mb-0">Manage your schedule, view patient records, and streamline consultations.</p>
+          </div>
+        </a>
+      </div>
+      <div class="col-md-4">
+        <a href="{{ url_for('main.login') }}" class="text-decoration-none">
+          <div class="role-card h-100">
+            <div class="role-emoji">⚡</div>
+            <h3 class="h4 mb-2">Admin</h3>
+            <p class="text-muted mb-0">Oversee hospital operations, manage staff, and analyze performance metrics.</p>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features Grid -->
+<section class="py-5" style="background-color: var(--background);">
+  <div class="container py-5">
+    <div class="row g-5 align-items-center">
+      <div class="col-lg-5">
+        <h2 class="h1 mb-4">Everything you need to run a modern clinic</h2>
+        <p class="lead mb-4">Powerful features designed to reduce administrative burden and improve patient care.</p>
+
+        <div class="d-flex flex-column gap-3">
+          <div class="d-flex align-items-center gap-3">
+            <div class="text-primary">
+              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 6L9 17l-5-5" />
+              </svg>
+            </div>
+            <span class="fw-medium">Smart Appointment Scheduling</span>
+          </div>
+          <div class="d-flex align-items-center gap-3">
+            <div class="text-primary">
+              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 6L9 17l-5-5" />
+              </svg>
+            </div>
+            <span class="fw-medium">Electronic Health Records (EHR)</span>
+          </div>
+          <div class="d-flex align-items-center gap-3">
+            <div class="text-primary">
+              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 6L9 17l-5-5" />
+              </svg>
+            </div>
+            <span class="fw-medium">Secure Patient Portal</span>
+          </div>
+          <div class="d-flex align-items-center gap-3">
+            <div class="text-primary">
+              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 6L9 17l-5-5" />
+              </svg>
+            </div>
+            <span class="fw-medium">Analytics & Reporting</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-7">
+        <div class="row g-4">
+          <div class="col-md-6">
+            <div class="feature-card">
+              <div class="icon-box icon-primary">📅</div>
+              <h4 class="h5 mb-3">Easy Booking</h4>
+              <p class="text-muted small mb-0">24/7 online booking system that syncs with doctor availability in
+                real-time.</p>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="feature-card mt-md-4">
+              <div class="icon-box icon-teal">🛡️</div>
+              <h4 class="h5 mb-3">Data Security</h4>
+              <p class="text-muted small mb-0">Enterprise-grade encryption and modern compliant data storage.</p>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="feature-card">
+              <div class="icon-box icon-indigo">📊</div>
+              <h4 class="h5 mb-3">Insights</h4>
+              <p class="text-muted small mb-0">Track clinic performance, patient retention, and revenue growth.</p>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="feature-card mt-md-4">
+              <div class="icon-box icon-primary">📱</div>
+              <h4 class="h5 mb-3">Responsive Design</h4>
+              <p class="text-muted small mb-0">Fully responsive design that works perfectly and user-friendly.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats Bar -->
+<section class="py-5 bg-white border-top border-bottom">
+  <div class="container">
+    <div class="row text-center g-4">
+      <div class="col-md-3 col-6">
+        <div class="stat-item">
+          <div class="stat-value">98%</div>
+          <div class="stat-label">Patient Satisfaction</div>
+        </div>
+      </div>
+      <div class="col-md-3 col-6">
+        <div class="stat-item">
+          <div class="stat-value">24/7</div>
+          <div class="stat-label">Support Available</div>
+        </div>
+      </div>
+      <div class="col-md-3 col-6">
+        <div class="stat-item">
+          <div class="stat-value">50+</div>
+          <div class="stat-label">Specialists</div>
+        </div>
+      </div>
+      <div class="col-md-3 col-6">
+        <div class="stat-item">
+          <div class="stat-value">0s</div>
+          <div class="stat-label">Waiting Time</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5">
+  <div class="container py-5">
+    <div class="bg-white rounded-4 p-5 text-center border shadow-sm position-relative overflow-hidden">
+      <div class="bg-shape shape-1" style="top: -50%; right: -20%; opacity: 0.1;"></div>
+
+      <div class="position-relative" style="z-index: 1;">
+        <h2 class="display-5 mb-4">Ready to transform your healthcare experience?</h2>
+        <p class="lead mb-5 mx-auto" style="max-width: 600px;">
+          Join thousands of satisfied patients and doctors who trust our platform for their daily medical needs.
+        </p>
+        <div class="d-flex justify-content-center gap-3">
+          <a href="{{ url_for('main.register') }}" class="btn btn-modern-primary btn-lg px-5">
+            Create Free Account
+          </a>
+        </div>
+        <p class="text-muted small mt-4">No credit card required · Cancel anytime</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+{% endblock %}

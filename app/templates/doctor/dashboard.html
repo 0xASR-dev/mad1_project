@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-1">Doctor Workspace</h1>
+      <p class="text-muted mb-0">Stay on top of today's appointments, review recent visits, and access patient histories.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a class="btn btn-outline-primary" href="{{ url_for('main.doctor_profile') }}"><i class="bi bi-person-circle me-1"></i>Edit Profile</a>
+      <a class="btn btn-success" href="{{ url_for('main.doctor_availability') }}">Manage availability</a>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <section class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h2 class="h5 mb-0">Upcoming appointments</h2>
+          <span class="badge bg-primary">{{ upcoming|length }}</span>
+        </div>
+        {% if upcoming %}
+          <div class="table-responsive shadow-sm rounded-3">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th scope="col">Date</th>
+                  <th scope="col">Time</th>
+                  <th scope="col">Patient</th>
+                  <th scope="col">Status</th>
+                  <th scope="col" class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for a in upcoming %}
+                  <tr>
+                    <td>{{ a.date.strftime('%d %b %Y') }}</td>
+                    <td>{{ a.time_slot }}</td>
+                    <td>
+                      {{ a.patient.user.name if a.patient and a.patient.user else 'N/A' }}
+                      {% if a.patient %}
+                        <br><small class="text-muted">{{ a.patient.user.email }}</small>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if a.status == 'Completed' %}
+                        <span class="badge bg-success">Completed</span>
+                      {% elif a.status == 'Cancelled' %}
+                        <span class="badge bg-danger">Cancelled</span>
+                      {% else %}
+                        <span class="badge bg-info text-dark">{{ a.status }}</span>
+                      {% endif %}
+                    </td>
+                    <td class="text-end">
+                      {% if a.patient %}
+                        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('main.doctor_view_patient_history', patient_id=a.patient.id) }}">History</a>
+                      {% endif %}
+                      {% if a.status == 'Booked' %}
+                        <a class="btn btn-sm btn-success" href="{{ url_for('main.doctor_complete_appointment', aid=a.id) }}">Complete</a>
+                        <form class="d-inline-block" method="post" action="{{ url_for('main.doctor_cancel_appointment', aid=a.id) }}">
+                          <button class="btn btn-sm btn-outline-danger" type="submit">Cancel</button>
+                        </form>
+                      {% elif a.status == 'Completed' %}
+                        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('main.doctor_complete_appointment', aid=a.id) }}">Update notes</a>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="alert alert-light border mb-0">No upcoming appointments scheduled.</div>
+        {% endif %}
+      </section>
+
+      <section>
+        <h2 class="h5 mb-2">Recent appointments</h2>
+        {% if recent %}
+          <div class="table-responsive shadow-sm rounded-3">
+            <table class="table table-striped align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th scope="col">Date</th>
+                  <th scope="col">Time</th>
+                  <th scope="col">Patient</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Treatment</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for a in recent %}
+                  <tr>
+                    <td>{{ a.date.strftime('%d %b %Y') }}</td>
+                    <td>{{ a.time_slot }}</td>
+                    <td>{{ a.patient.user.name if a.patient and a.patient.user else 'N/A' }}</td>
+                    <td>
+                      {% if a.status == 'Completed' %}
+                        <span class="badge bg-success">Completed</span>
+                      {% elif a.status == 'Cancelled' %}
+                        <span class="badge bg-danger">Cancelled</span>
+                      {% else %}
+                        <span class="badge bg-secondary">{{ a.status }}</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if a.treatment %}
+                        <a class="link-primary" href="{{ url_for('main.doctor_complete_appointment', aid=a.id) }}">Review notes</a>
+                      {% else %}
+                        <span class="text-muted">N/A</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="alert alert-light border mb-0">No recent appointments to display.</div>
+        {% endif %}
+      </section>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <h2 class="h5 mb-3">Patients in care</h2>
+          {% if patients %}
+            <ul class="list-group list-group-flush">
+              {% for patient in patients %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <div>
+                    <span class="fw-semibold">{{ patient.user.name }}</span>
+                    <br><small class="text-muted">{{ patient.user.email }}</small>
+                  </div>
+                  <a class="btn btn-sm btn-outline-primary" href="{{ url_for('main.doctor_view_patient_history', patient_id=patient.id) }}">History</a>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-muted mb-0">No patients assigned yet.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

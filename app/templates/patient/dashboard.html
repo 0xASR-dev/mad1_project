@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="h3 mb-1">Patient Dashboard</h1>
+    <p class="text-muted mb-0">Welcome back, {{ current_user.name }}!</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-primary" href="{{ url_for('main.patient_profile') }}"><i
+        class="bi bi-person-circle me-1"></i>Edit Profile</a>
+    <a class="btn btn-primary" href="{{ url_for('main.patient_appointments') }}">My Appointments</a>
+  </div>
+</div>
+
+<div class="mb-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4>Available Doctors</h4>
+    <form class="d-flex align-items-center" method="get">
+      <input class="form-control form-control-sm me-2" type="search" name="q" value="{{ q }}"
+        placeholder="Search doctor or specialization" aria-label="Search" style="width: 250px;">
+      <button class="btn btn-sm btn-outline-primary" type="submit">Search</button>
+    </form>
+  </div>
+  <div class="table-responsive shadow-sm rounded-3">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Name</th>
+          <th>Specialization</th>
+          <th class="text-end">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in doctors %}
+        <tr>
+          <td>{{ d.user.name }}</td>
+          <td>{{ d.specialization }}</td>
+          <td class="text-end">
+            <a href="{{ url_for('main.patient_view_doctor_profile', doctor_id=d.id) }}"
+              class="btn btn-sm btn-outline-info me-1">View Profile</a>
+            <a href="{{ url_for('main.book_appointment', doctor_id=d.id) }}" class="btn btn-sm btn-primary">Book</a>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="3" class="text-center text-muted py-4">No doctors found matching your search.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<hr class="my-5">
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="mb-0">My Appointments</h4>
+  <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('main.patient_appointments') }}">View All &rarr;</a>
+</div>
+<div class="table-responsive shadow-sm rounded-3">
+  <table class="table table-hover align-middle mb-0">
+    <thead class="table-light">
+      <tr>
+        <th>Date</th>
+        <th>Time</th>
+        <th>Doctor</th>
+        <th>Status</th>
+        <th class="text-end">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for a in appointments[:5] %}
+      <tr>
+        <td>{{ a.date.strftime('%d %b %Y') }}</td>
+        <td>{{ a.time_slot }}</td>
+        <td>{{ a.doctor.user.name if a.doctor and a.doctor.user else 'N/A' }}</td>
+        <td>
+          {% if a.status == 'Booked' %}
+          <span class="badge bg-info text-dark">Booked</span>
+          {% elif a.status == 'Completed' %}
+          <span class="badge bg-success">Completed</span>
+          {% elif a.status == 'Cancelled' %}
+          <span class="badge bg-danger">Cancelled</span>
+          {% endif %}
+        </td>
+        <td class="text-end">
+          <a class="btn btn-sm btn-outline-primary"
+            href="{{ url_for('main.patient_view_appointment', aid=a.id) }}">View</a>
+          {% if a.status == 'Booked' %}
+          <form class="d-inline-block" method="post" action="{{ url_for('main.patient_cancel_appointment', aid=a.id) }}"
+            onsubmit="return confirm('Cancel this appointment?');">
+            <button class="btn btn-sm btn-outline-danger" type="submit">Cancel</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="5" class="text-center py-4">No appointments yet</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

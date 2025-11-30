@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="row justify-content-center">
+    <div class="col-xl-8 col-lg-10">
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+          <h1 class="h2 mb-2">Complete Appointment</h1>
+          <p class="text-muted mb-0">Record treatment details and finalize this consultation</p>
+        </div>
+        <a class="btn btn-outline-secondary" href="{{ url_for('main.doctor_dashboard') }}">
+          <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+        </a>
+      </div>
+
+      <div class="row g-4">
+        <!-- Left Column - Patient & Appointment Info -->
+        <div class="col-lg-4">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-primary bg-gradient text-white py-3">
+              <h5 class="mb-0"><i class="bi bi-person-circle me-2"></i>Appointment Details</h5>
+            </div>
+            <div class="card-body">
+              <div class="mb-4">
+                <label class="text-muted small mb-1">Patient Name</label>
+                <h6 class="mb-0">{{ appt.patient.user.name }}</h6>
+              </div>
+
+              <div class="mb-4">
+                <label class="text-muted small mb-1">Patient Contact</label>
+                <p class="mb-0">
+                  {% if appt.patient.contact %}
+                  <i class="bi bi-telephone me-1"></i>{{ appt.patient.contact }}
+                  {% else %}
+                  <span class="text-muted">Not provided</span>
+                  {% endif %}
+                </p>
+              </div>
+
+              <div class="mb-4">
+                <label class="text-muted small mb-1">Age</label>
+                <p class="mb-0">{{ appt.patient.age or 'N/A' }} years</p>
+              </div>
+
+              <hr class="my-3">
+
+              <div class="mb-3">
+                <label class="text-muted small mb-1">Appointment Date</label>
+                <p class="mb-0"><i class="bi bi-calendar-event me-1"></i>{{ appt.date.strftime('%d %b %Y') }}</p>
+              </div>
+
+              <div class="mb-0">
+                <label class="text-muted small mb-1">Time Slot</label>
+                <p class="mb-0"><i class="bi bi-clock me-1"></i>{{ appt.time_slot }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column - Treatment Form -->
+        <div class="col-lg-8">
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+              <h5 class="mb-0"><i class="bi bi-clipboard-pulse me-2"></i>Treatment Information</h5>
+            </div>
+            <div class="card-body p-4">
+              <form method="post">
+                <div class="mb-4">
+                  <label class="form-label fw-semibold" for="diagnosis">
+                    Diagnosis <span class="text-danger">*</span>
+                  </label>
+                  <textarea name="diagnosis" id="diagnosis" class="form-control form-control-lg" rows="4"
+                    placeholder="Enter patient diagnosis..." required
+                    style="resize: vertical;">{{ appt.treatment.diagnosis if appt.treatment else '' }}</textarea>
+                  <div class="form-text">
+                    <i class="bi bi-info-circle me-1"></i>Provide a clear description of the patient's condition
+                  </div>
+                </div>
+
+                <div class="mb-4">
+                  <label class="form-label fw-semibold" for="prescription">
+                    Prescription <span class="text-danger">*</span>
+                  </label>
+                  <textarea name="prescription" id="prescription" class="form-control form-control-lg" rows="4"
+                    placeholder="List medications, dosage, and instructions..." required
+                    style="resize: vertical;">{{ appt.treatment.prescription if appt.treatment else '' }}</textarea>
+                  <div class="form-text">
+                    <i class="bi bi-info-circle me-1"></i>Include medication names, dosages, frequency, and duration
+                  </div>
+                </div>
+
+                <div class="mb-4">
+                  <label class="form-label fw-semibold" for="notes">
+                    Additional Notes <span class="text-muted small">(Optional)</span>
+                  </label>
+                  <textarea name="notes" id="notes" class="form-control form-control-lg" rows="3"
+                    placeholder="Any additional observations, recommendations, or follow-up instructions..."
+                    style="resize: vertical;">{{ appt.treatment.notes if appt.treatment else '' }}</textarea>
+                  <div class="form-text">
+                    <i class="bi bi-info-circle me-1"></i>Additional observations, care instructions, or follow-up
+                    recommendations
+                  </div>
+                </div>
+
+                <div class="alert alert-light border d-flex align-items-start">
+                  <i class="bi bi-exclamation-circle text-primary me-2 mt-1"></i>
+                  <div>
+                    <strong>Important:</strong> Please ensure all information is accurate before submitting.
+                    This will mark the appointment as "Completed" and the patient will be able to view these details.
+                  </div>
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                  <a href="{{ url_for('main.doctor_dashboard') }}" class="btn btn-outline-secondary btn-lg">
+                    <i class="bi bi-x-circle me-1"></i> Cancel
+                  </a>
+                  <button type="submit" class="btn btn-success btn-lg px-5">
+                    <i class="bi bi-check-circle me-1"></i> Submit & Complete Appointment
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  textarea:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+  }
+</style>
+{% endblock %}

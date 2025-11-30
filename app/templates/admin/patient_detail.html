@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="h3 mb-1">{{ patient.user.name }}</h1>
+    <p class="text-muted mb-0">Patient profile overview and appointment history.</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary" href="{{ url_for('main.admin_patients') }}">&larr; Back to patients</a>
+    <a class="btn btn-outline-primary" href="{{ url_for('main.admin_edit_patient', pid=patient.id) }}">Edit</a>
+    <form method="post" action="{{ url_for('main.admin_toggle_patient', pid=patient.id) }}">
+      <button class="btn {% if patient.is_blacklisted %}btn-outline-success{% else %}btn-outline-warning{% endif %}"
+        type="submit">
+        {% if patient.is_blacklisted %}Re-activate{% else %}Blacklist{% endif %}
+      </button>
+    </form>
+  </div>
+</div>
+
+<div class="row g-4 mb-5">
+  <div class="col-lg-6">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <h2 class="h5 mb-3">Contact information</h2>
+        <dl class="row mb-0">
+          <dt class="col-sm-4">Email</dt>
+          <dd class="col-sm-8">{{ patient.user.email }}</dd>
+          <dt class="col-sm-4">Phone</dt>
+          <dd class="col-sm-8">{{ patient.contact or 'N/A' }}</dd>
+          <dt class="col-sm-4">Age</dt>
+          <dd class="col-sm-8">{{ patient.age or 'N/A' }}</dd>
+          <dt class="col-sm-4">Status</dt>
+          <dd class="col-sm-8">
+            {% if patient.is_blacklisted %}
+            <span class="badge bg-danger">Blacklisted</span>
+            {% else %}
+            <span class="badge bg-success">Active</span>
+            {% endif %}
+          </dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <h2 class="h5 mb-3">Linked account</h2>
+        <p class="mb-1"><strong>Created:</strong> {{ patient.user.created_at.strftime('%d %b %Y') if
+          patient.user.created_at else 'N/A' }}</p>
+        <p class="mb-1"><strong>Role:</strong> {{ patient.user.role|title }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section>
+  <h2 class="h5 mb-3">Appointment history</h2>
+  {% if appointments %}
+  <div class="table-responsive shadow-sm rounded-3">
+    <table class="table table-striped align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th scope="col">Date</th>
+          <th scope="col">Time</th>
+          <th scope="col">Doctor</th>
+          <th scope="col">Status</th>
+          <th scope="col">Treatment</th>
+          <th scope="col" class="text-end">Admin tools</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for appt in appointments %}
+        <tr>
+          <td>{{ appt.date.strftime('%d %b %Y') }}</td>
+          <td>{{ appt.time_slot }}</td>
+          <td>{{ appt.doctor.user.name if appt.doctor and appt.doctor.user else 'N/A' }}</td>
+          <td>
+            {% if appt.status == 'Completed' %}
+            <span class="badge bg-success">Completed</span>
+            {% elif appt.status == 'Cancelled' %}
+            <span class="badge bg-danger">Cancelled</span>
+            {% else %}
+            <span class="badge bg-info text-dark">{{ appt.status }}</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if appt.treatment %}
+            <a class="link-primary" href="{{ url_for('main.admin_view_appointment', aid=appt.id) }}">View notes</a>
+            {% else %}
+            <span class="text-muted">N/A</span>
+            {% endif %}
+          </td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-secondary"
+              href="{{ url_for('main.admin_view_appointment', aid=appt.id) }}">Open</a>
+            <form class="d-inline-block" method="post"
+              action="{{ url_for('main.admin_update_appointment_status', aid=appt.id) }}">
+              <input type="hidden" name="status" value="Cancelled">
+              <button class="btn btn-sm btn-outline-danger" type="submit">Cancel</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="alert alert-light border">No appointments recorded for this patient.</div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="h3 mb-1">Manage doctors</h1>
+    <p class="text-muted mb-0">Add new doctor, update specializations, or blacklist doctors.</p>
+  </div>
+  <div>
+    <a class="btn btn-success" href="{{ url_for('main.admin_add_doctor') }}" style="margin-right: 8px;">+ Add doctor</a>
+    <a class="btn btn-outline-secondary" href="{{ url_for('main.admin_dashboard') }}">&larr; Back to dashboard</a>
+  </div>
+</div>
+
+<form class="row gy-2 gx-3 align-items-center mb-4" method="get">
+  <div class="col-sm-6 col-md-4">
+    <label class="form-label visually-hidden" for="search">Search doctors</label>
+    <input class="form-control" id="search" name="q" type="search" value="{{ q }}"
+      placeholder="Search by name, email, or specialization">
+  </div>
+  <div class="col-auto">
+    <button class="btn btn-primary" type="submit">Search</button>
+  </div>
+</form>
+
+{% if doctors %}
+<div class="table-responsive shadow-sm rounded-3">
+  <table class="table table-hover align-middle mb-0">
+    <thead class="table-light">
+      <tr>
+        <th scope="col">Name</th>
+        <th scope="col">Email</th>
+        <th scope="col">Specialization</th>
+        <th scope="col">Status</th>
+        <th scope="col" class="text-end">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for d in doctors %}
+      <tr>
+        <td>{{ d.user.name }}</td>
+        <td>{{ d.user.email }}</td>
+        <td>{{ d.specialization or 'N/A' }}</td>
+        <td>
+          {% if d.is_blacklisted %}
+          <span class="badge bg-danger">Blacklisted</span>
+          {% else %}
+          <span class="badge bg-success">Active</span>
+          {% endif %}
+        </td>
+        <td class="text-end">
+          <a class="btn btn-sm btn-outline-primary" href="{{ url_for('main.admin_edit_doctor', d_id=d.id) }}">Edit</a>
+          <form class="d-inline-block" method="post" action="{{ url_for('main.admin_toggle_doctor', d_id=d.id) }}">
+            <button class="btn btn-sm btn-outline-warning" type="submit">{% if d.is_blacklisted %}Re-activate{% else
+              %}Blacklist{% endif %}</button>
+          </form>
+          <form class="d-inline-block" method="post" action="{{ url_for('main.admin_delete_doctor', d_id=d.id) }}"
+            onsubmit="return confirm('Delete doctor account?');">
+            <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="alert alert-light border">No doctors found for the current filter.</div>
+{% endif %}
+{% endblock %}
